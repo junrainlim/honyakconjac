@@ -8,6 +8,7 @@ export default defineConfig({
   plugins: [
     vue(),
   ],
+  base: "https://junrainlim.github.io/honyakconjac/",
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
