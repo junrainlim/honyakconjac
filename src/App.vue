@@ -47,8 +47,8 @@ const updateBrushCoordinatesMouse = (e: MouseEvent) => {
 const updateBrushCoordinatesTouch = (e: TouchEvent) => {
   let canvas = document.getElementById('ca-canvas') as HTMLCanvasElement;
   const bcr = canvas.getBoundingClientRect();
-  brushX = e.targetTouches[0].clientX - bcr.x;
-  brushY = e.targetTouches[0].clientY - bcr.y;
+  brushX = Math.round((e.targetTouches[0].clientX - bcr.x) / canvasScale);
+  brushY = Math.round((e.targetTouches[0].clientY - bcr.y) / canvasScale);
   console.log(brushX, brushY);
 };
 // Element to paint with.
@@ -119,9 +119,10 @@ setInterval(tick, 10);
               startPainting();
             }
           "
-          @touchend="stopPainting"
+          @touchmove="updateBrushCoordinatesTouch"
           @touchcancel="stopPainting"
-          style="image-rendering: crisp-edges; border: solid 1px grey"
+          @touchend="stopPainting"
+          style="image-rendering: crisp-edges; border: solid 1px grey; touch-action: none"
         ></canvas>
       </div>
       <div>
