@@ -55,10 +55,14 @@ const getBrushSize = () => parseInt(brushSizeString);
 // True if currently painting, false otherwise
 let currentlyPainting = false;
 
-// Toggle the painting state.
-const togglePainting = () => {
-  currentlyPainting = !currentlyPainting;
+const startPainting = () => {
+  currentlyPainting = true;
 };
+
+const stopPainting = () => {
+  currentlyPainting = false;
+}
+
 
 // Paint a location with an element.
 const paint = () => {
@@ -101,8 +105,9 @@ setInterval(tick, 10);
           :width="CAWidth"
           :height="CAHeight"
           @mousemove="updateMouseCoordinates"
-          @mousedown="togglePainting"
-          @mouseup="togglePainting"
+          @mousedown="startPainting"
+          @mouseup="stopPainting"
+          @mouseleave="stopPainting"
           style="image-rendering: crisp-edges; border: solid 1px grey"
         ></canvas>
       </div>
