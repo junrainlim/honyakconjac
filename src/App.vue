@@ -35,13 +35,21 @@ const tick = () => {
 };
 
 // Coordinates of the mouse cursor, to be updated constantly
-let mouseX = 0;
-let mouseY = 0;
+let brushX = 0;
+let brushY = 0;
 
 // Updates the stored mouse position.
-const updateMouseCoordinates = (e: MouseEvent) => {
-  mouseX = e.offsetX;
-  mouseY = e.offsetY;
+const updateBrushCoordinatesMouse = (e: MouseEvent) => {
+  brushX = e.offsetX;
+  brushY = e.offsetY;
+};
+
+const updateBrushCoordinatesTouch = (e: TouchEvent) => {
+  let canvas = document.getElementById('ca-canvas') as HTMLCanvasElement;
+  const bcr = canvas.getBoundingClientRect();
+  brushX = e.targetTouches[0].clientX - bcr.x;
+  brushY = e.targetTouches[0].clientY - bcr.y;
+  console.log(brushX, brushY);
 };
 // Element to paint with.
 let paintElement = Sand;
@@ -61,19 +69,16 @@ const startPainting = () => {
 
 const stopPainting = () => {
   currentlyPainting = false;
-}
-
+};
 
 // Paint a location with an element.
 const paint = () => {
-  console.log(brushSizeString, getBrushSize, mouseX, mouseY);
-  // console.log(mouseX + brushSize, mouseY + brushSize);
   c.fill(
     new paintElement(),
-    mouseX,
-    mouseY,
-    mouseX + getBrushSize() - 1,
-    mouseY + getBrushSize() - 1
+    brushX,
+    brushY,
+    brushX + getBrushSize() - 1,
+    brushY + getBrushSize() - 1
   );
 };
 
@@ -104,10 +109,18 @@ setInterval(tick, 10);
           id="ca-canvas"
           :width="CAWidth"
           :height="CAHeight"
-          @mousemove="updateMouseCoordinates"
+          @mousemove="updateBrushCoordinatesMouse"
           @mousedown="startPainting"
           @mouseup="stopPainting"
           @mouseleave="stopPainting"
+          @touchstart="
+            (e) => {
+              updateBrushCoordinatesTouch(e);
+              startPainting();
+            }
+          "
+          @touchend="stopPainting"
+          @touchcancel="stopPainting"
           style="image-rendering: crisp-edges; border: solid 1px grey"
         ></canvas>
       </div>
