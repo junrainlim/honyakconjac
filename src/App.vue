@@ -1,12 +1,24 @@
 <script setup lang="ts">
 import * as CA from './components/cellularAutomata/CellularAutomata';
+import { Air } from './components/cellularAutomata/elements/Air';
 import { Sand } from './components/cellularAutomata/elements/Sand';
+import { Water } from './components/cellularAutomata/elements/Water';
 
 const CAWidth = 64;
 const CAHeight = 64;
+// Scale factor for CA to be scaled in the canvas element.
+const canvasScale = 4;
+// Additional margin to compensate for scaled canvas element.
+const marginHorizontal = (CAWidth * 2).toString() + 'px';
+const marginVertical = (CAHeight * 2).toString() + 'px';
 
-const c = new CA.CellularMatrix(CAWidth, CAHeight);
+let c: CA.CellularMatrix;
 
+const initialiseCA = () => {
+  c = new CA.CellularMatrix(CAWidth, CAHeight);
+};
+
+// Renders the CA to the canvas.
 const render = () => {
   let canvas = document.getElementById('ca-canvas') as HTMLCanvasElement;
   let ctx = canvas.getContext('2d')!;
@@ -15,31 +27,121 @@ const render = () => {
 
 // Main game tick loop.
 const tick = () => {
+  if (currentlyPainting) {
+    paint();
+  }
   c.tick();
   render();
 };
 
-// Debugging
-const spawnSand = () => {
-  c.fill(new Sand(), CAWidth / 2 - 1, 0, CAWidth /2 + 2, 2);
+// Coordinates of the mouse cursor, to be updated constantly
+let mouseX = 0;
+let mouseY = 0;
+
+// Updates the stored mouse position.
+const updateMouseCoordinates = (e: MouseEvent) => {
+  mouseX = e.offsetX;
+  mouseY = e.offsetY;
+};
+// Element to paint with.
+let paintElement = Sand;
+
+// Size of brush to paint with, as a string
+let brushSizeString = '1';
+
+// Size of brush to paint with, as a number.
+const getBrushSize = () => parseInt(brushSizeString);
+
+// True if currently painting, false otherwise
+let currentlyPainting = false;
+
+// Toggle the painting state.
+const togglePainting = () => {
+  currentlyPainting = !currentlyPainting;
 };
 
+// Paint a location with an element.
+const paint = () => {
+  console.log(brushSizeString, getBrushSize, mouseX, mouseY);
+  // console.log(mouseX + brushSize, mouseY + brushSize);
+  c.fill(
+    new paintElement(),
+    mouseX,
+    mouseY,
+    mouseX + getBrushSize() - 1,
+    mouseY + getBrushSize() - 1
+  );
+};
+
+// Resets the CA to its initial state.
+const reset = () => {
+  initialiseCA();
+};
+
+// Create and initialise the CA.
+initialiseCA();
 // Start the tick interval.
 setInterval(tick, 10);
 </script>
-
+<style>
+#ca-canvas {
+  scale: v-bind('canvasScale');
+  margin-top: v-bind('marginVertical');
+  margin-bottom: v-bind('marginVertical');
+  margin-left: v-bind('marginHorizontal');
+  margin-right: v-bind('marginHorizontal');
+}
+</style>
 <template>
   <main>
-    <div class="flex-container">
-      <canvas
-      id="ca-canvas"
-      :width="CAWidth"
-      :height="CAHeight"
-      style="scale: 1; image-rendering: crisp-edges; border: solid 1px grey;"
-    ></canvas>
-    <button @click="spawnSand()">Spawn Sand</button>
+    <div style="display: flex">
+      <div>
+        <canvas
+          id="ca-canvas"
+          :width="CAWidth"
+          :height="CAHeight"
+          @mousemove="updateMouseCoordinates"
+          @mousedown="togglePainting"
+          @mouseup="togglePainting"
+          style="image-rendering: crisp-edges; border: solid 1px grey"
+        ></canvas>
+      </div>
+      <div>
+        <div>
+          Element
+          <br />
+          <input
+            type="radio"
+            id="choice-sand"
+            name="elementChoice"
+            checked="true"
+            :value="Sand"
+            v-model="paintElement"
+          />
+          <label for="choiceSand">Sand</label>
+
+          <input
+            type="radio"
+            id="choice-water"
+            name="elementChoice"
+            :value="Water"
+            v-model="paintElement"
+          />
+          <label for="choiceWater">Water</label>
+        </div>
+        <div>
+          <label>Brush size</label>
+          <input
+            type="range"
+            id="brush-size-selector"
+            name="brushSizeSelector"
+            min="1"
+            max="16"
+            v-model="brushSizeString"
+          />
+        </div>
+        <button @click="reset">Reset</button>
+      </div>
     </div>
-    
-    
   </main>
 </template>

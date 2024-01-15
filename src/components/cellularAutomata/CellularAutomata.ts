@@ -229,12 +229,6 @@ class CellularMatrix {
       for (let y = 0; y < this.height; y += 1) {
         const elementIndex = this.getIndexFromCoords(x, y);
         const element = this.matrix[elementIndex];
-        if (x == this.width / 2 && y == 0) {
-          this.matrixNext[elementIndex] = new Sand();
-        }
-        // if (y == this.height - 1 && element.matterState != MATTER_STATES.SOLID) {
-        //   this.matrixNext[elementIndex] = new Sand();
-        // }
         // Reset the element's falling state.
         element.isFalling = false;
         // If the element is not already at the bottom, try to make it fall.
@@ -283,9 +277,9 @@ class CellularMatrix {
    * Fills an area with an element.
    * @param element Element to fill with.
    * @param startX Starting X coordinate of fill area.
-   * @param startY Starting Y cooordinate of fill area.
-   * @param endY Ending Y cooordinate of fill area.
+   * @param startY Starting Y coordinate of fill area.
    * @param endX Ending X coordinate of fill area.
+   * @param endY Ending Y coordinate of fill area.
    */
   public fill(
     element: CAElement,
@@ -296,7 +290,12 @@ class CellularMatrix {
   ): void {
     for (let i = 0; i < Math.abs(endX - startX) + 1; i += 1) {
       for (let j = 0; j < Math.abs(endY - startY) + 1; j += 1) {
-        this.matrixNext[this.getIndexFromCoords(startX + i, startY + j)] = element;
+        const placePosition = this.getIndexFromCoords(startX + i, startY + j)
+        // Check if a non-gas element already exists there
+        if (this.matrix[placePosition].matterState != MATTER_STATES.GAS) {
+          break;
+        }
+        this.matrixNext[placePosition] = element;
       }
     }
   }
